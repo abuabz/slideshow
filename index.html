@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .slide-visible {
+            display: block;
+        }
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+        .nav-menu {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translatez(100%);
+            opacity: 0;
+            position: absolute;
+            bottom: 48px;
+            right: 4px;
+            z-index: 10;
+        }
+        .nav-menu-open {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen m-0">
+    <div id="presentationContainer" class="w-screen h-screen bg-black relative">
+        <!-- Slide Container -->
+        <div id="slideContainer" class="relative w-full h-full">
+            <!-- Slides will be dynamically inserted here -->
+        </div>
+        <!-- Toggle Button -->
+        <button id="toggleNavBtn" class="absolute bottom-3 right-3 p-1 bg-black/20 text-white rounded-full flex items-center justify-center w-8 h-8 z-20">
+            <svg id="toggleIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+        <!-- Navigation Menu -->
+        <div id="navMenu" class="nav-menu bg-white/10 p-2 rounded-lg flex flex-col gap-1">
+            <button id="prevBtn" class="p-1 bg-black/40 text-white rounded-full hover:bg-black disabled:bg-gray-600 flex items-center justify-center w-8 h-8" disabled>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <button id="fullscreenBtn" class="p-1 bg-black/40 text-white rounded-full hover:bg-black flex items-center justify-center w-8 h-8">
+                <svg id="fullscreenIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"></path>
+                </svg>
+            </button>
+            <button id="nextBtn" class="p-1 bg-black/40 text-white rounded-full hover:bg-black flex items-center justify-center w-8 h-8">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Function to check if the screen is mobile (less than 768px)
+        function isMobileScreen() {
+            return window.innerWidth < 768;
+        }
+
+        // Dynamically generate slides with image names based on screen size
+        const slideContainer = document.getElementById('slideContainer');
+        function generateSlides() {
+            slideContainer.innerHTML = ''; // Clear existing slides
+            const prefix = isMobileScreen() ? 'm' : '';
+            for (let i = 1; i <= 9; i++) {
+                const slideDiv = document.createElement('div');
+                slideDiv.id = `slide${i}`;
+                slideDiv.className = i === 1 ? 'slide slide-visible' : 'slide';
+                const img = document.createElement('img');
+                img.src = `./img/${prefix}${i}.png`;
+                img.alt = `Slide ${i}`;
+                img.className = 'slide-image';
+                slideDiv.appendChild(img);
+                slideContainer.appendChild(slideDiv);
+            }
+        }
+
+        // Initial slide generation
+        generateSlides();
+
+        // Regenerate slides on window resize
+        window.addEventListener('resize', () => {
+            generateSlides();
+            // Reinitialize slides after regeneration
+            const newSlides = document.querySelectorAll('.slide');
+            showSlide(currentSlide >= newSlides.length ? newSlides.length - 1 : currentSlide);
+        });
+
+        // Existing JavaScript for navigation and functionality
+        let slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const fullscreenIcon = document.getElementById('fullscreenIcon');
+        const toggleNavBtn = document.getElementById('toggleNavBtn');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const navMenu = document.getElementById('navMenu');
+        const presentationContainer = document.getElementById('presentationContainer');
+        let currentSlide = 0;
+        let isNavOpen = false;
+
+        function showSlide(index) {
+            slides = document.querySelectorAll('.slide'); // Update slides reference
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('slide-visible', i === index);
+            });
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+            currentSlide = index;
+        }
+
+        function toggleNavMenu() {
+            isNavOpen = !isNavOpen;
+            navMenu.classList.toggle('nav-menu-open', isNavOpen);
+            toggleIcon.innerHTML = isNavOpen
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>';
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                presentationContainer.requestFullscreen().then(() => {
+                    fullscreenIcon.innerHTML = '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 9l4 0l0 -4" /><path d="M3 3l6 6" /><path d="M5 15l4 0l0 4" /><path d="M3 21l6 -6" /><path d="M19 9l-4 0l0 -4" /><path d="M15 9l6 -6" /><path d="M19 15l-4 0l0 4" /><path d="M15 15l6 6" />';
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    fullscreenIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>';
+                });
+            }
+        });
+
+        toggleNavBtn.addEventListener('click', toggleNavMenu);
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft' && currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            } else if (event.key === 'ArrowRight' && currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+    </script>
+</body>
+</html>
